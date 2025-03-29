@@ -11,3 +11,6 @@ Add an include for the library:
 Call the gridfinity_base module:
 
     gridfinity_base([1,1,42]);
+
+The resulting model will appears as:
+![Resulting model](https://github.com/melance/gridfinity.bosl2/blob/main/Images/gridfinity_base.1x1x42.png)
