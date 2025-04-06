@@ -64,7 +64,10 @@ module gridfinity_base(size,
 					   magnets=true,
 					   magnet_radius=3.11,
 					   magnet_height=3,
-					   magnet_countersink=true){
+					   magnet_countersink=true,
+					   anchor=CENTER,
+					   spin=0,
+					   orient=UP){
 	assert(!is_undef(size) || is_vector(size,3),"Size must be a 3 part vector.");
 	assert(size.x>0);
 	assert(size.y>0);
@@ -90,7 +93,12 @@ module gridfinity_base(size,
 				]
 				: [];	
 	
-	attachable(size=[actual_size.x,actual_size.y,actual_size.z+base_height],offset=[0,0,(actual_size.z+base_height)/2],anchors=anchors){
+	attachable(size=[actual_size.x,actual_size.y,actual_size.z+base_height],
+			   offset=[0,0,(actual_size.z+base_height)/2],
+			   anchors=anchors,
+			   anchor=anchor,
+			   spin=spin,
+			   orient=orient){
 		difference(){
 			union(){
 				translate([actual_size.x/-2+0.25,actual_size.y/-2+0.25])
