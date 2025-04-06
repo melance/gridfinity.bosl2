@@ -12,18 +12,20 @@
 
 include <bosl2/std.scad>
 
+$gridfinity_bosl_echo=false;
+
 // Unit width as defined in the gridfinity standard
 Unit_Width=42;
 // Unit height as defined in the gridfinity standard
 Unit_Height=7;
+// Types of magnets to include
+Magnets=1; // [0:None,1:All,2:Edges Only,3:Corners Only]
 
 /* [Hidden] */
 // The height of the base connector as defined in the gridfinity standard
 base_height=4.55;
 // Radii of the connector points as defined in the gridfinity standard
 radii=[1.6,3.2,7.5];
-
-$gridfinity_bosl_echo=false;
 
 // Creates a gridfinity base unit.
 // Size x and y represent the number of units
@@ -49,8 +51,8 @@ $gridfinity_bosl_echo=false;
 //					default is undef
 //	 inner_radius = the radius of the corners of the inner_size cutout
 //					default is undef
-//	 magnets = if true, then generate magnet holes in the bottom of the base
-//					default is true
+//	 magnets = what magnets to include.  Options are 0 for None, 1 for All, 2 for Edges Only, and 3 for Corners Only
+//					default is All
 //   magnet_radius = the radius of the magnets
 //					default is 3.11
 //	 magnet_height = the height of the magnets
@@ -61,7 +63,7 @@ module gridfinity_base(size,
 					   height_scale=0,
 					   inner_size=undef,
 					   inner_radius=undef,					   
-					   magnets=true,
+					   magnets=1,
 					   magnet_radius=3.11,
 					   magnet_height=3,
 					   magnet_countersink=true,
@@ -107,8 +109,9 @@ module gridfinity_base(size,
 					dy=y*Unit_Width-0.5;
 					for(x=[0:size.x-1]){
 						dx=x*Unit_Width-0.5;
+						
 						translate([dx,dy,0])
-						SingleBase();
+						SingleBase(Magnets(x,y,size.x-1,size.y-1));
 					}
 				}
 				
@@ -123,6 +126,24 @@ module gridfinity_base(size,
 		}
 		children();
 	}
+	
+	function Magnets(x,y,width,depth) = 
+		let(
+			fl = magnets==1 ||
+				 (magnets==2 && (x==0 || y==0)) ||
+				 (magnets==3 && x==0 && y==0),
+			bl = magnets==1 ||
+				 (magnets==2 && (x==0 || y==depth)) ||
+				 (magnets==3 && x==0 && y==depth),
+			fr = magnets==1 ||
+				 (magnets==2 && (x==width || y==0)) ||
+				 (magnets==3 && x==width && y==0),
+			br = magnets==1 ||
+				 (magnets==2 && (x==width || y==depth)) ||
+				 (magnets==3 && x==width && y==depth)
+		)
+		[fl, bl, fr, br];
+	
 	module Magnet(){
 		cylinder(h=magnet_height,r=magnet_radius)
 		if (magnet_countersink)
@@ -131,7 +152,7 @@ module gridfinity_base(size,
 		
 	}
 	
-	module SingleBase(){
+	module SingleBase(magnets){
 		attachable(size=[Unit_Width-0.5,Unit_Width-0.5,base_height]){
 			tag_scope()
 			difference(){
@@ -145,9 +166,20 @@ module gridfinity_base(size,
 				
 				if (magnets){
 					magnet_offset=((Unit_Width-0.5)/2-magnet_radius)-4.8;
-					#for(a=[0:90:270])					
-						zrot(a)					
+					if (magnets[0])
 						left(magnet_offset)
+						fwd(magnet_offset)
+						Magnet();
+					if (magnets[1])
+						left(magnet_offset)
+						back(magnet_offset)
+						Magnet();
+					if (magnets[2])
+						right(magnet_offset)
+						fwd(magnet_offset)
+						Magnet();
+					if (magnets[3])
+						right(magnet_offset)
 						back(magnet_offset)
 						Magnet();
 				}
